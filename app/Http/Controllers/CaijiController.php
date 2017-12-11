@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Caiji;
+use App\Models\CaijiMessage;
 use Illuminate\Support\Facades\Log;
+use \App\Services\TransferService;
 
 class CaijiController extends Controller
 {
@@ -38,13 +40,13 @@ class CaijiController extends Controller
         }
         $quanUrl = $matchQuanUrl[0];
 
-        $goodsUrl = null;
         //匹配商品
+        $goodsUrl = null;
         if (preg_match("/https?:\/\/((item\.taobao)|(detail\.tmall))\.com\/[A-Za-z0-9&=_\?\.\/]+/", $message, $matchGoodsUrl)) {
             $goodsUrl = $matchGoodsUrl[0];
         } else if (preg_match("/https?:\/\/s\.click\.taobao\.com\/[A-Za-z0-9&=_\?\.\/]+/", $message, $matchGoodsUrl)) {
             $goodsUrl = $matchGoodsUrl[0];
-            $goodsUrl = (new \App\Services\TransferService())->getFinalUrl($goodsUrl);
+            $goodsUrl = (new TransferService())->getFinalUrl($goodsUrl);
         }
 
         if (!$goodsUrl) {
@@ -53,14 +55,16 @@ class CaijiController extends Controller
             return;
         }
 
+        //匹配图片
         $picField = $messages[0];
         if (!preg_match("/\[CQ:image.*?url=(.*?)\]/", $picField, $matchPic)) {
             Log::info("无主图");
             Log::info($messages);
-            return;
+            return ;
         }
         $pic = urldecode($matchPic[1]);
 
+        //匹配标题,描述
         $messageText = preg_replace("/^.*?http.*\n?/m", "", $message);
         $messageText = preg_replace("/^.*?(原价|抢券|领券|优惠券|佣金|秒过|卷后|券后|劵后|深夜福利|转发|分界线|---|===).*\n?/m", "", $messageText);
         $messageTextArray = explode("\n", $messageText);
@@ -76,6 +80,7 @@ class CaijiController extends Controller
         $title = $messageTextArray[0];
         $description = $messageTextArray[1];
 
+        //匹配商品ID
         try {
             parse_str(parse_url($goodsUrl)['query'], $query);
             $goodsId = $query['id'];
@@ -85,6 +90,7 @@ class CaijiController extends Controller
             return;
         }
 
+        //匹配券ID,卖家ID
         parse_str(parse_url($quanUrl)['query'], $query);
         $couponId = isset($query['activityId']) ? $query['activityId'] : '';
         $couponId = isset($query['activity_id']) ? $query['activity_id'] : $couponId;
@@ -92,15 +98,48 @@ class CaijiController extends Controller
         $sellerId = isset($query['sellerId']) ? $query['sellerId'] : '';
         $sellerId = isset($query['seller_id']) ? $query['seller_id'] : $sellerId;
 
-        Caiji::create([
+        // 采集商品表字段.
+        $param = [
             'title' => $title,
             'description' => $description,
             'goods_id' => $goodsId,
             'coupon_id' => $couponId,
             'seller_id' => $sellerId,
             'add_time' => date('Y-m-d H:i:s'),
-            'message' => $message,
             'pic' => $pic
-        ]);
+        ];
+
+        $data = Caiji::where('coupon_id', $couponId)->first();
+
+        // 判断商品表是否存在,不存在创建.
+        if($data == NULL){
+            $caiji = Caiji::create($param);
+            $caijiId = $caiji->id;
+
+            // 采集信息表字段.
+            $msg = [
+                'caiji_id' => $caijiId,
+                'message' => $message,
+                'add_time' => date('Y-m-d H:i:s')
+            ];
+
+            // 插入采集信息表.
+            CaijiMessage::create($msg);
+
+            return;
+        }
+
+        // 存在则更新.
+        $data->update($param);
+        $caijiId = $data->id;
+
+        $msg = [
+            'caiji_id' => $caijiId,
+            'message' => $message,
+            'add_time' => date('Y-m-d H:i:s')
+        ];
+
+        // 更新采集信息表.
+        CaijiMessage::where('caiji_id', $caijiId)->update($msg);
     }
 }

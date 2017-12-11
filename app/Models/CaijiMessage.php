@@ -5,14 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 采集商品表
- * Class Caiji
+ * 采集信息表
+ * Class CaijiMessage
  * @package App\Models
  */
-class Caiji extends Model
+class CaijiMessage extends Model
 {
-    protected $table = "xmt_caiji";
+    protected $table = "xmt_caiji_message";
+    protected $primaryKey = 'id';
     protected $guarded = ['id'];
     public $timestamps = false;
-
 }
