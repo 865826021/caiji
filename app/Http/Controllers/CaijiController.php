@@ -101,6 +101,8 @@ class CaijiController extends Controller
         // 采集商品表字段.
         $param = [
             'title' => $title,
+            'qqgroup_id' => $groupId,
+            'qquser_id' => $userId,
             'description' => $description,
             'goods_id' => $goodsId,
             'coupon_id' => $couponId,
@@ -116,14 +118,12 @@ class CaijiController extends Controller
             $caiji = Caiji::create($param);
             $caijiId = $caiji->id;
 
-            // 采集信息表字段.
+            // 插入采集信息表.
             $msg = [
                 'caiji_id' => $caijiId,
                 'message' => $message,
                 'add_time' => date('Y-m-d H:i:s')
             ];
-
-            // 插入采集信息表.
             CaijiMessage::create($msg);
 
             return;
@@ -133,13 +133,12 @@ class CaijiController extends Controller
         $data->update($param);
         $caijiId = $data->id;
 
+        // 更新采集信息表.
         $msg = [
             'caiji_id' => $caijiId,
             'message' => $message,
             'add_time' => date('Y-m-d H:i:s')
         ];
-
-        // 更新采集信息表.
         CaijiMessage::where('caiji_id', $caijiId)->update($msg);
     }
 }
