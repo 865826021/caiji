@@ -136,7 +136,7 @@ class CaijiController extends Controller
             ];
             CaijiMessage::create($msg);
 
-            return '存入成功';
+            return json_encode(['msg'=>'存入成功']);
         }
 
         // 存在则更新.
