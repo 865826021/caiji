@@ -21,7 +21,7 @@ class CaijiController extends Controller
         $message = html_entity_decode($request->post('message'));
 
         if (!($postType == 'message' && $messageType == 'group')) {
-            return;
+            return ['msg'=>'notGroupMessage'];
         }
 
         $messages = explode("\n", trim($message));
@@ -29,14 +29,14 @@ class CaijiController extends Controller
         if (strpos($message, '复制这条信息') || strpos($message, '淘口令')) {
             Log::info("过滤");
             Log::info($message);
-            return;
+            return ['msg'=>'invalid'];
         }
 
         //匹配券
         if (!preg_match("/https?:\/\/(((market|shop)\.m)|(taoquan))\.taobao\.com\/[A-Za-z0-9&=_\?\.\/]+/", $message, $matchQuanUrl)) {
             Log::info("无券链接");
             Log::info($message);
-            return;
+            return ['msg'=>'notCouponUrl'];
         }
         $quanUrl = $matchQuanUrl[0];
 
@@ -52,7 +52,7 @@ class CaijiController extends Controller
         if (!$goodsUrl) {
             Log::info("无商品地址");
             Log::info($message);
-            return;
+            return ['msg'=>'notGoodsUrl'];
         }
 
         //匹配图片
@@ -60,7 +60,7 @@ class CaijiController extends Controller
         if (!preg_match("/\[CQ:image.*?url=(.*?)\]/", $picField, $matchPic)) {
             Log::info("无主图");
             Log::info($messages);
-            return ;
+            return ['msg'=>'notPic'];
         }
         $pic = urldecode($matchPic[1]);
 
@@ -87,7 +87,7 @@ class CaijiController extends Controller
         } catch (\Exception $e) {
             Log::info("商品地址解析失败");
             Log::info($goodsUrl);
-            return;
+            return ['msg'=>'goodsUrlParseFailed'];
         }
 
         //匹配券ID,卖家ID
@@ -97,7 +97,7 @@ class CaijiController extends Controller
         if(!$couponId){
             Log::info("没有券ID");
             Log::info($message);
-            return;
+            return ['msg'=>'notCouponId'];
         }
 
         $sellerId = isset($query['sellerId']) ? $query['sellerId'] : '';
@@ -105,7 +105,7 @@ class CaijiController extends Controller
         if(!$sellerId){
             Log::info("没有卖家ID");
             Log::info($message);
-            return;
+            return ['msg'=>'notSellerId'];
         }
 
         // 采集商品表字段.
@@ -136,7 +136,7 @@ class CaijiController extends Controller
             ];
             CaijiMessage::create($msg);
 
-            return ['msg'=>'存入成功'];
+            return ['msg'=>'writeOk'];
         }
 
         // 存在则更新.
@@ -151,6 +151,6 @@ class CaijiController extends Controller
         ];
         CaijiMessage::where('caiji_id', $caijiId)->update($msg);
 
-        return;
+        return ['msg'=>'updateOk'];
     }
 }
