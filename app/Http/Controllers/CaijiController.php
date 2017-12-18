@@ -94,9 +94,19 @@ class CaijiController extends Controller
         parse_str(parse_url($quanUrl)['query'], $query);
         $couponId = isset($query['activityId']) ? $query['activityId'] : '';
         $couponId = isset($query['activity_id']) ? $query['activity_id'] : $couponId;
+        if(!$couponId){
+            Log::info("没有券ID");
+            Log::info($message);
+            return;
+        }
 
         $sellerId = isset($query['sellerId']) ? $query['sellerId'] : '';
         $sellerId = isset($query['seller_id']) ? $query['seller_id'] : $sellerId;
+        if(!$sellerId){
+            Log::info("没有卖家ID");
+            Log::info($message);
+            return;
+        }
 
         // 采集商品表字段.
         $param = [
@@ -126,7 +136,7 @@ class CaijiController extends Controller
             ];
             CaijiMessage::create($msg);
 
-            return;
+            return '存入成功';
         }
 
         // 存在则更新.
@@ -140,5 +150,7 @@ class CaijiController extends Controller
             'add_time' => date('Y-m-d H:i:s')
         ];
         CaijiMessage::where('caiji_id', $caijiId)->update($msg);
+
+        return;
     }
 }
