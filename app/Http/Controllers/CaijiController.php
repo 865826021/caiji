@@ -26,7 +26,7 @@ class CaijiController extends Controller
 
         $messages = explode("\n", trim($message));
 
-        if (strpos($message, '复制这条信息') || strpos($message, '淘口令') || strpos($message, '限时') || strpos($message, '★') || strpos($message, '手慢无')) {
+        if (strpos($message, '复制这条信息') || strpos($message, '淘口令') || strpos($message, '限时') || strpos($message, '★') || strpos($message, '手慢无') || strpos($message, '拍下发')) {
             Log::info("过滤");
             Log::info($message);
             return ['msg'=>'invalid'];
