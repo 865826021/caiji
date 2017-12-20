@@ -26,7 +26,7 @@ class CaijiController extends Controller
 
         $messages = explode("\n", trim($message));
 
-        if (strpos($message, '复制这条信息') || strpos($message, '淘口令')) {
+        if (strpos($message, '复制这条信息') || strpos($message, '淘口令') || strpos($message, '限时') || strpos($message, '★') || strpos($message, '手慢无')) {
             Log::info("过滤");
             Log::info($message);
             return ['msg'=>'invalid'];
@@ -78,7 +78,16 @@ class CaijiController extends Controller
         $messageTextArray = array_values($messageTextArray);
 
         $title = $messageTextArray[0];
+        if(!empty($title)&&ctype_space($title)){
+            Log::info("标题是空格");
+            Log::info($goodsUrl);
+            return ['msg'=>'titleIsSpace'];
+        }
         $description = $messageTextArray[1];
+        if (strpos($title, '夜猫子') || strpos($message, '爆款优品排行')) {
+            $title = $messageTextArray[1];
+            $description = $messageTextArray[2];
+        }
 
         //匹配商品ID
         try {
