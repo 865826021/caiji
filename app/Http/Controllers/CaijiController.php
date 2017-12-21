@@ -26,7 +26,7 @@ class CaijiController extends Controller
 
         $messages = explode("\n", trim($message));
 
-        if (strpos($message, '复制这条信息') || strpos($message, '淘口令') || strpos($message, '限时') || strpos($message, '★') || strpos($message, '手慢无') || strpos($message, '拍下发')) {
+        if (strpos($message, '复制这条信息') || strpos($message, '淘口令') || strpos($message, '手慢无') || strpos($message, '拍下发')) {
             Log::info("过滤");
             Log::info($message);
             return ['msg'=>'invalid'];
@@ -42,11 +42,11 @@ class CaijiController extends Controller
 
         //匹配商品
         $goodsUrl = null;
-        if (preg_match("/https?:\/\/((item\.taobao)|(detail\.tmall))\.com\/[A-Za-z0-9&=_\?\.\/]+/", $message, $matchGoodsUrl)) {
+        if (preg_match("/https?:\/\/((item\.taobao)|(detail\.tmall))\.[a-z]{2,3}\/[A-Za-z0-9&=_\?\.\/]+/", $message, $matchGoodsUrl)) {
             $goodsUrl = $matchGoodsUrl[0];
         } else if (preg_match("/https?:\/\/s\.click\.taobao\.com\/[A-Za-z0-9&=_\?\.\/]+/", $message, $matchGoodsUrl)) {
-            $goodsUrl = $matchGoodsUrl[0];
-            $goodsUrl = (new TransferService())->getFinalUrl($goodsUrl);
+//            $goodsUrl = $matchGoodsUrl[0];
+//            $goodsUrl = (new TransferService())->getFinalUrl($goodsUrl);
         }
 
         if (!$goodsUrl) {
