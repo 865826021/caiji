@@ -84,7 +84,7 @@ class CaijiController extends Controller
             return ['msg'=>'titleIsSpace'];
         }
         $description = $messageTextArray[1];
-        if (strpos($title, '夜猫子') || strpos($message, '爆款优品排行') || strpos($message, '秒杀排行') || strpos($message, '突袭秒杀') || strpos($message, '秒杀爆款')) {
+        if (strpos($title, '夜猫子') || strpos($title, '爆款优品排行') || strpos($title, '秒杀排行') || strpos($title, '突袭秒杀') || strpos($title, '秒杀爆款') || strpos($title, '来袭') || preg_match('/(拍.*?件)|(今.*?荐)|(今.*?点)/', $title)) {
             $title = $messageTextArray[1];
             $description = $messageTextArray[2];
         }
