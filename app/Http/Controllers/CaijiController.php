@@ -33,21 +33,28 @@ class CaijiController extends Controller
         }
 
         //匹配券
-        if (!preg_match("/https?:\/\/(((market|shop)\.m)|(taoquan))\.taobao\.com\/[A-Za-z0-9&=_\?\.\/]+/", $message, $matchQuanUrl)) {
+        if (preg_match("/https?:\/\/(((market|shop)\.m)|(taoquan))\.taobao\.com\/[A-Za-z0-9&=_\?\.\/]+/", $message, $matchQuanUrl)) {
+            $quanUrl = $matchQuanUrl[0];
+        }
+//        else if (preg_match('/https?:\/\/ymb.nz\/[A-Za-z0-9&=_\?\.\/]+/', $message, $matchQuanUrl)) {
+//            $url = get_headers($matchQuanUrl[0], TRUE);
+//            $quanUrl = $url['Location'][0];
+//        }
+        if (!$quanUrl){
             Log::info("无券链接");
             Log::info($message);
             return ['msg'=>'notCouponUrl'];
         }
-        $quanUrl = $matchQuanUrl[0];
 
         //匹配商品
         $goodsUrl = null;
         if (preg_match("/https?:\/\/((item\.taobao)|(detail\.tmall))\.[a-z]{2,3}\/[A-Za-z0-9&=_\?\.\/]+/", $message, $matchGoodsUrl)) {
             $goodsUrl = $matchGoodsUrl[0];
-        } else if (preg_match("/https?:\/\/s\.click\.taobao\.com\/[A-Za-z0-9&=_\?\.\/]+/", $message, $matchGoodsUrl)) {
+        }
+//        else if (preg_match("/https?:\/\/s\.click\.taobao\.com\/[A-Za-z0-9&=_\?\.\/]+/", $message, $matchGoodsUrl)) {
 //            $goodsUrl = $matchGoodsUrl[0];
 //            $goodsUrl = (new TransferService())->getFinalUrl($goodsUrl);
-        }
+//        }
 
         if (!$goodsUrl) {
             Log::info("无商品地址");
