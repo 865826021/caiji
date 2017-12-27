@@ -99,7 +99,7 @@ class CaijiController extends Controller
         //匹配商品ID
         try {
             parse_str(parse_url($goodsUrl)['query'], $query);
-            $goodsId = $query['id'];
+            $goodsId = preg_replace('/\D/', '', $query['id']);
         } catch (\Exception $e) {
             Log::info("商品地址解析失败");
             Log::info($goodsUrl);
